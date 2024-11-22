@@ -1,18 +1,28 @@
-import {createPool} from 'mysql2';
-import dotenv from 'dotenv';
+import { createConnection, createPool } from "mysql2";
+
+import dotenv from "dotenv";
 dotenv.config();
 
-const configBase = createPool({
+//Cargar el módulo de mysql
+import { createPool } from "mysql2";
+
+// Cargo el archivo .env
+import dotenv from "dotenv";
+dotenv.config();
+
+// Crear la conexión a la base de datos
+const db = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     keepAliveInitialDelay: 300000,
-    enableKeepAlive: true,
-})
+    enableKeepAlive: true
+});
 
-configBase.getConnection((err, connection) => {
+// Verificar la conexión
+db.getConnection((err, connection) => {
     if (err) {
         console.error('ERROR: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
@@ -28,17 +38,8 @@ configBase.getConnection((err, connection) => {
     if (connection) {
         connection.release();
     }
+    return;
 })
 
-const config = {
-    ...configBase,
-    query: (sql, params, callback) => {
-        // Log the SQL query and its parameters
-        console.log(`Executing query: ${sql} with parameters: ${JSON.stringify(params)}`);
 
-        // Call the original query function
-        configBase.query(sql, params, callback);
-    }
-};
-
-export default config;
+export default db;
